@@ -1,3 +1,8 @@
+#
+# create n-fold partition of dataset
+# perform knn classification n times
+# n-fold generalization error = average over all iterations
+# 
 # load required libraries for this tutorial
 library(class)
 library(ggplot2)
@@ -7,81 +12,96 @@ data <- iris                # create copy of iris dataframe
 labels <- data$Species      # store labels
 data$Species <- NULL        # remove labels from feature set (note: could
 
-## TRAIN/TEST SPLIT
-# initialize random seed for consistency
-# this allows our data to look the same every single time the experiment is run
-set.seed(1234) 
+N <- nrow(data)             # 
+train.pct <- .7             # Use 70% of our data as a training set
 
-# we want to use 70% of our data as a training set
-N <- nrow(data)
-train.pct <- .7
+set.seed(1234)              # initialize random seed for consistency
+kfold.plots = data.frame()   
+kfold.errors = data.frame()
 
-train.index <- sample(1:N, train.pct * N)       # random sample of records (training set)
-train.data <- data[train.index, ]       # perform train/test split
-test.data <- data[-train.index, ]       # note use of neg index...different than Python!
+max.k <- 100                # 
 
-train.labels <- as.factor(as.matrix(labels)[train.index, ])     # extract training set labels
-test.labels <- as.factor(as.matrix(labels)[-train.index, ])     # extract test set labels
-
-## Apply the Model
-# initialize results object
-err.rates <- data.frame()
-
-max.k <- 100
-
-
-knn.nfold <- function(n, train.data ) {
-  # create n-fold partition of dataset
-  # perform knn classification n times
-  # n-fold generalization error = average over all iterations
+#
+# Calculate some error statistics - average over all iterations
+#
+knn.error <- function(max.k, err.rates) {
+  ## OUTPUT RESULTS
   
-  # Take the training data and partition into N-folds
-  # 
-  for (i in 1:n) {
-    train_kfold_index = sample(train.index, round(nrow(train.data)/n) )
-    #
-    # Perform knn classification
-    #
-    for (k in 1:max.k) {
-      knn_errors <- get_knn(k,train.data,train_kfold_index) #
-      print k, knn_errors
-    }
-  }
 }
 
+# Return ggplot object
 #
-# perform fit for various values of k
-#    returns error rate
-#
-get_knn <- function(kiter,train.data, train_kfold_index)
-  knn.fit <- knn(
-    train = train.data,         # training set
-    test = test.data,           # test set
-    cl = train.labels,          # true labels
-    k = kiter                   # number of NN to poll
-  )
+gen_plot <- function(results) {
 
-  # print params and confusion matrix for each value k
-  cat('\n', 'k = ', k, ', train.pct = ', train.pct, '\n', sep='')
-  print(table(test.labels, knn.fit))
-
-  # Return  generalation error 
-  return sum(test.labels != knn.fit) / length(test.labels)
-}
-
-## OUTPUT RESULTS
-results <- data.frame(1:max.k, err.rates)   # create results summary data frame
-names(results) <- c('k', 'err.rate')        # label columns of results df
-
-# create title for results plot
-title <- paste('knn results (train.pct = ', train.pct, ')', sep='')
+  # create title for results plot
+  title <- paste('knn results (train.pct = ', train.pct, ')', sep='')
 
 # create results plot
-results.plot <- ggplot(results, aes(x=k, y=err.rate)) + geom_point() + geom_line()
-results.plot <- results.plot + ggtitle(title)
+  results.plot <- ggplot(results, aes(x=k, y=err.rate)) + geom_point() + geom_line()
+  results.plot <- results.plot + ggtitle(title)
 
 # draw results plot
-results.plot
+  results.plot
+}
+
+# ========================================================================================================
+# Partition data into n-folds & run Knn classification
+#
+# ========================================================================================================
+
+knn.nfold <- function(n, data ) {  
+  for (f in 1:n) {  
+    #
+    # Split the data into training (train.pct %) and test (1 - train.pct %) data
+    #
+    train.index <- sample(1:N, train.pct * N)       # random sample of records (training set)
+    train.data <- data[train.index, ]       # perform train/test split
+    test.data <- data[-train.index, ]       # note use of neg index...different than Python!
+    
+    train.labels <- as.factor(as.matrix(labels)[train.index, ])     # extract training set labels
+    test.labels <- as.factor(as.matrix(labels)[-train.index, ])     # extract test set labels
+    err.rates <- data.frame()                                       # initialize results object
+
+    #
+    # Perform fit for various values of k
+    #
+    for (k in 1:max.k) {
+      #   
+      # Apply the Model
+      knn.fit <- knn(train = train.data,         # training set
+                    test = test.data,            # test set
+                    cl = train.labels,           # true labels
+                    k = kiter)                   # number of NN to poll
+      
+      # Return generalization error for iteration k and add to errr.rates dataframe
+      this.error <- (sum(test.labels != knn.fit) / length(test.labels))    
+      err.rates = rbind(err_rates,this.error)                
+    
+      # print params and confusion matrix for each value k
+      cat('\n', 'k = ', k, ', train.pct = ', train.pct, '\n', sep='')
+      print(table(test.labels, knn.fit))
+    }
+
+  # Calculate error dataframe  
+  results <- data.frame(1:max.k, err.rates)   # create results summary data frame
+  names(results) <- c('k', 'err.rate')        # label columns of results df
+
+  # Calculate error for fold n
+  knn.error(max.k, err.rates)    
+  
+  # Create a plot and store
+  kfold.plots[f] = gen_plot(results) 
+}
+
+
+
+
+knn.nfold(4,data)
+
+
+#multiplot(...)             # Plot up to N (4?) knn error plots
+
+
 
 ## NOTES
 # Which range of k provided the lowest error results?
