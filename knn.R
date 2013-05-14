@@ -16,23 +16,77 @@ N <- nrow(data)             #
 train.pct <- .7             # Use 70% of our data as a training set
 
 set.seed(1234)              # initialize random seed for consistency
-kfold.plots = data.frame()   
-kfold.errors = data.frame()
+kfold.plots <- data.frame()   
+kfold.errors <- data.frame()
 
-max.k <- 100                # 
+max.k <- 3                # 
 
+
+# --------------------------------------------------------------------------------------------------------
+# Multiple plot function - copied as is from R Graphics Cookbook
 #
-# Calculate some error statistics - average over all iterations
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
 #
-knn.error <- function(max.k, err.rates) {
-  ## OUTPUT RESULTS
-  
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+# --------------------------------------------------------------------------------------------------------
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots <- length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots == 1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
 }
 
+
+# --------------------------------------------------------------------------------------------------------
+# Calculate some error statistics - average over all iterations
+#   - returns mean, median, variance
+# --------------------------------------------------------------------------------------------------------
+knn.error <- function(max.k, err.rates) {
+  ## OUTPUT RESULTS
+  return(0)
+
+}
+
+# --------------------------------------------------------------------------------------------------------
 # Return ggplot object
 #
+# --------------------------------------------------------------------------------------------------------
 gen_plot <- function(results) {
-
   # create title for results plot
   title <- paste('knn results (train.pct = ', train.pct, ')', sep='')
 
@@ -44,11 +98,10 @@ gen_plot <- function(results) {
   results.plot
 }
 
-# ========================================================================================================
-# Partition data into n-folds & run Knn classification
-#
-# ========================================================================================================
-
+# --------------------------------------------------------------------------------------------------------
+#   Partition data into n-folds & run Knn classification
+#     - returns 
+# --------------------------------------------------------------------------------------------------------
 knn.nfold <- function(n, data ) {  
   for (f in 1:n) {  
     #
@@ -62,10 +115,13 @@ knn.nfold <- function(n, data ) {
     test.labels <- as.factor(as.matrix(labels)[-train.index, ])     # extract test set labels
     err.rates <- data.frame()                                       # initialize results object
 
+    print("==========================================================")
+    sprintf("FOLD %d", f)
+
     #
     # Perform fit for various values of k
     #
-    for (k in 1:max.k) {
+    for (kiter in 1:max.k) {
       #   
       # Apply the Model
       knn.fit <- knn(train = train.data,         # training set
@@ -74,11 +130,12 @@ knn.nfold <- function(n, data ) {
                     k = kiter)                   # number of NN to poll
       
       # Return generalization error for iteration k and add to errr.rates dataframe
-      this.error <- (sum(test.labels != knn.fit) / length(test.labels))    
-      err.rates = rbind(err_rates,this.error)                
+      this.error <- sum(test.labels != knn.fit) / length(test.labels)    
+      err.rates <- rbind(err.rates, this.error)                
     
       # print params and confusion matrix for each value k
-      cat('\n', 'k = ', k, ', train.pct = ', train.pct, '\n', sep='')
+ 
+      cat('\n', 'k = ', kiter, ', train.pct = ', train.pct, '\n', sep='')
       print(table(test.labels, knn.fit))
     }
 
@@ -90,16 +147,21 @@ knn.nfold <- function(n, data ) {
   knn.error(max.k, err.rates)    
   
   # Create a plot and store
-  kfold.plots[f] = gen_plot(results) 
+#  kfold.plots[f] = gen_plot(results) 
+  }
 }
 
 
+
+# ========================================================================================================
+# Main Function
+#
+# ========================================================================================================
 
 
 knn.nfold(4,data)
 
 
-#multiplot(...)             # Plot up to N (4?) knn error plots
 
 
 
