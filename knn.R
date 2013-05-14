@@ -10,17 +10,16 @@ library(ggplot2)
 ## PREPROCESSING
 data <- iris                # create copy of iris dataframe
 labels <- data$Species      # store labels
-data$Species <- NULL        # remove labels from feature set (note: could
+data$Species <- NULL        # remove labels from feature set 
 
-N <- nrow(data)             # 
+N <- nrow(data)             # size of data
 train.pct <- .7             # Use 70% of our data as a training set
 
 set.seed(1234)              # initialize random seed for consistency
-kfold.plots <- data.frame()   
-kfold.errors <- data.frame()
+max.k <- 3                 # 
 
-max.k <- 3                # 
-
+kfold.summary <- data.frame()   # for overal evaluation  
+kfold.detail  <- data.frame()   # for plotting of Knn
 
 # --------------------------------------------------------------------------------------------------------
 # Multiple plot function - copied as is from R Graphics Cookbook
@@ -71,15 +70,17 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
-
 # --------------------------------------------------------------------------------------------------------
 # Calculate some error statistics - average over all iterations
-#   - returns mean, median, variance
+#   - err.rates = 1:max.k list of error rates by iteration k
+#   - returns a list (mean, variance)
 # --------------------------------------------------------------------------------------------------------
 knn.error <- function(max.k, err.rates) {
   ## OUTPUT RESULTS
-  return(0)
+  v = var(err.rates)
+  m = colMeans(err.rates)
 
+  return(list(m, v))
 }
 
 # --------------------------------------------------------------------------------------------------------
@@ -115,14 +116,10 @@ knn.nfold <- function(n, data ) {
     test.labels <- as.factor(as.matrix(labels)[-train.index, ])     # extract test set labels
     err.rates <- data.frame()                                       # initialize results object
 
-    print("==========================================================")
-    sprintf("FOLD %d", f)
-
     #
     # Perform fit for various values of k
     #
     for (kiter in 1:max.k) {
-      #   
       # Apply the Model
       knn.fit <- knn(train = train.data,         # training set
                     test = test.data,            # test set
@@ -134,21 +131,25 @@ knn.nfold <- function(n, data ) {
       err.rates <- rbind(err.rates, this.error)                
     
       # print params and confusion matrix for each value k
- 
       cat('\n', 'k = ', kiter, ', train.pct = ', train.pct, '\n', sep='')
       print(table(test.labels, knn.fit))
     }
 
-  # Calculate error dataframe  
-  results <- data.frame(1:max.k, err.rates)   # create results summary data frame
-  names(results) <- c('k', 'err.rate')        # label columns of results df
-
   # Calculate error for fold n
-  knn.error(max.k, err.rates)    
+  names(err.rates) = 'err.rate'
+  this.stats = knn.error(max.k, err.rates)
   
+  kfold.summary <- rbind(kfold.summary, this.stats)
+    
+  # Calculate detailed error dataframe (max.k by n columns) 
+  #kfold.detail <- cbind(kfold.detail, err.rates))   
+    
   # Create a plot and store
-#  kfold.plots[f] = gen_plot(results) 
+  # kfold.plots[f] = gen_plot(results) 
   }
+  rownames(kfold.summary) = 1:4
+  names(kfold.summary) = c('mean', 'variance')
+  print(kfold.summary)
 }
 
 
@@ -158,9 +159,12 @@ knn.nfold <- function(n, data ) {
 #
 # ========================================================================================================
 
+n = 4
+results  <- data.frame(row.names=1:n)
 
-knn.nfold(4,data)
-
+knn.nfold(n,data)
+#print ("Errors by fold")
+#print(kfold.errors)
 
 
 
