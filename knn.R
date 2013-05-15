@@ -16,9 +16,17 @@ N <- nrow(data)             # size of data
 train.pct <- .7             # Use 70% of our data as a training set
 
 set.seed(1234)              # initialize random seed for consistency
-max.k <- 3                 # 
+max.k <- 100                 # 
 
-kfold.summary <- data.frame()   # for overal evaluation  
+
+# !!! Fix code !!!
+#    as the cbind/rowbind appear to make them into single member lists with 1 DF
+#    e.g. 
+# > nrow(kfold.summary[1])
+#     NULL
+#  > nrow(kfold.summary[[1]])
+#  [1] 4
+kfold.summary <- data.frame()   # for overall evaluation  
 kfold.detail  <- data.frame()   # for plotting of Knn
 
 # --------------------------------------------------------------------------------------------------------
@@ -87,16 +95,11 @@ knn.error <- function(max.k, err.rates) {
 # Return ggplot object
 #
 # --------------------------------------------------------------------------------------------------------
-gen_plot <- function(results) {
-  # create title for results plot
+gen_plot <- function(df) {
   title <- paste('knn results (train.pct = ', train.pct, ')', sep='')
+  gg <- ggplot(df, aes(x=colnames(df))) + geom_point() + geom_line() + ggtitle(title)
 
-# create results plot
-  results.plot <- ggplot(results, aes(x=k, y=err.rate)) + geom_point() + geom_line()
-  results.plot <- results.plot + ggtitle(title)
-
-# draw results plot
-  results.plot
+  return(gg)
 }
 
 # --------------------------------------------------------------------------------------------------------
@@ -129,27 +132,39 @@ knn.nfold <- function(n, data ) {
       # Return generalization error for iteration k and add to errr.rates dataframe
       this.error <- sum(test.labels != knn.fit) / length(test.labels)    
       err.rates <- rbind(err.rates, this.error)                
-    
+      
       # print params and confusion matrix for each value k
-      cat('\n', 'k = ', kiter, ', train.pct = ', train.pct, '\n', sep='')
-      print(table(test.labels, knn.fit))
+#      cat('\n', 'k = ', kiter, ', train.pct = ', train.pct, '\n', sep='')
+#      print(table(test.labels, knn.fit))
     }
 
+  #Store detailed error (max.k by n columns) 
+  kfold.detail <- cbind(kfold.detail, err.rates)   
+    
   # Calculate error for fold n
   names(err.rates) = 'err.rate'
   this.stats = knn.error(max.k, err.rates)
-  
   kfold.summary <- rbind(kfold.summary, this.stats)
     
-  # Calculate detailed error dataframe (max.k by n columns) 
-  #kfold.detail <- cbind(kfold.detail, err.rates))   
-    
-  # Create a plot and store
-  # kfold.plots[f] = gen_plot(results) 
   }
-  rownames(kfold.summary) = 1:4
+  rownames(kfold.summary) = paste("fold", 1:n,sep="")
   names(kfold.summary) = c('mean', 'variance')
   print(kfold.summary)
+  
+  rownames(kfold.detail) <- paste("k",1:max.k,sep="")
+  names(kfold.detail) <- paste("fold",1:n,sep="")
+  print(head(kfold.detail))
+  
+#  gg <- vector()
+#  for (i in 1:n) {
+#    title <- paste('knn results (train.pct = ', train.pct, ')', sep='')
+#    gg[i] <- ggplot(kfold.detail, aes(x=kfold.detail[i])) + geom_point() + geom_line() + ggtitle(title)
+#  }
+  
+  ggplot(kfold.detail, aes(x=rownames(kfold.detail[1]), y=kfold.detail[1]['fold1'])) + geom_point() + geom_line()
+#  multiplot(gg[1], gg[2], gg[3], gg[4], cols=2)
+
+  return(list(kfold.summary, kfold.detail))
 }
 
 
@@ -160,13 +175,12 @@ knn.nfold <- function(n, data ) {
 # ========================================================================================================
 
 n = 4
-results  <- data.frame(row.names=1:n)
+kfold.summary  <- data.frame(row.names=1:n)
+kfold.detail   <- data.frame(row.names=1:max.k)
 
-knn.nfold(n,data)
-#print ("Errors by fold")
-#print(kfold.errors)
-
-
+k <- knn.nfold(n,data)
+kfold.summary <- k[1]
+kfold.detail  <- k[2]
 
 
 ## NOTES
