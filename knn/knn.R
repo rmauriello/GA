@@ -151,7 +151,7 @@ knn.nfold <- function(n, data ) {
   names(kfold.summary) = c('mean', 'variance')
   print(kfold.summary)
   
-  rownames(kfold.detail) <- paste("k",1:max.k,sep="")
+  rownames(kfold.detail) <- 1:max.k
   names(kfold.detail) <- paste("fold",1:n,sep="")
   print(head(kfold.detail))
   
@@ -161,10 +161,10 @@ knn.nfold <- function(n, data ) {
 #    gg[i] <- ggplot(kfold.detail, aes(x=kfold.detail[i])) + geom_point() + geom_line() + ggtitle(title)
 #  }
   
-  ggplot(kfold.detail, aes(x=rownames(kfold.detail[1]), y=kfold.detail[1]['fold1'])) + geom_point() + geom_line()
+  ggplot(kfold.detail[[1]], aes(x=rownames(kfold.detail[[1]]), y=kfold.detail[[1]]['fold1'])) + geom_point() + geom_line()
 #  multiplot(gg[1], gg[2], gg[3], gg[4], cols=2)
 
-  return(list(kfold.summary, kfold.detail))
+  return(vector[kfold.summary, kfold.detail])
 }
 
 

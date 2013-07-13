@@ -1,0 +1,77 @@
+Linear Regression and Cross Validation: Kaggle Salary Competition
+========================================================
+
+Last week in class we discussed linear regression and covered some of the mathematical background that results in using least squares. $$ y = \alpha + \beta x + \epsilon $$ 
+
+```{r}
+#
+#
+ # Variables:
+# Id,
+# Title - job description, often including location
+# FullDescription - detailed job description
+# LocationRaw - 
+# LocationNormalized - city
+# ContractType - full_time, part_time, NA (almost always full-time according to boxplots)
+# ContractTime - permanent, contract, NULL (boxplots very different)
+# Company - recruiting company or actual?
+# Category - job category, e.g. engineering **
+# SalaryRaw - salary, often as range (pounds)
+# SalaryNormalized - salaray as actual number (pounds)
+# SourceName - URL (of job posting?)
+
+require('plyr', quietly=TRUE)
+require('DAAG', quietly=TRUE)
+
+setwd("/Volumes/DATA/robert/Desktop/Projects/GA/salary")
+
+df <- read.csv('data/train.csv')
+test <- read.csv('data/test.csv')
+
+
+# Rename some columns to make life easier
+df2 <- df
+
+df2 <- rename(df2,  replace=c("LocationNormalized" = "City"))
+df2 <- rename(df2,  c("SalaryNormalized" = "Salary"))
+test <- rename(test, c("LocationNormalized" = "City"), warn_missing = TRUE)
+
+
+# Remove *** and city from description
+df2$city     <- as.numeric(as.factor(df2$City))
+df2$category <- as.numeric(as.factor(df2$Category))
+df2$ctime    <- as.numeric(as.factor(df2$ContractTime))
+df2$ctype    <- as.numeric(as.factor(df2$ContractType))
+df2$company  <- as.numeric(as.factor(df2$Company))
+
+
+test$city     <- as.numeric(as.factor(test$City))
+test$category <- as.numeric(as.factor(test$Category))
+test$ctime    <- as.numeric(as.factor(test$ContractTime))
+test$ctype    <- as.numeric(as.factor(test$ContractType))
+test$company  <- as.numeric(as.factor(test$Company))
+
+# Code the categories
+
+salary.glm <- glm(Salary ~ city + category + ctime + ctype + company, data=df2 )
+summary(salary.glm)
+
+plot(predict(salary.lm, test))
+
+cv.glm(df2,salary.glm, K=10)
+
+# Calculate MAE (mean absolute error)
+
+```
+
+Interpretation of cross-validation results:
+
+Bias-variance tradeoff in estimating error with k-fold cross validation
+K large: lower bias (large training sets), higher variance (training sets similar)
+K small: higher bias (small training sets), lower variance (training sets less similar)
+
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
