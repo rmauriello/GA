@@ -1,0 +1,84 @@
+[
+ {
+  "created_at": "2013-07-05T21:39:07Z", 
+  "trends": [
+   {
+    "url": "http://twitter.com/search?q=%23whenijoinedthisfandom", 
+    "query": "%23whenijoinedthisfandom", 
+    "name": "#whenijoinedthisfandom", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=%23VamosNosPermitir", 
+    "query": "%23VamosNosPermitir", 
+    "name": "#VamosNosPermitir", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=%23AskZozeebo", 
+    "query": "%23AskZozeebo", 
+    "name": "#AskZozeebo", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=%23FFmebellathorne", 
+    "query": "%23FFmebellathorne", 
+    "name": "#FFmebellathorne", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=%23ZaynMalikYouArePerfect", 
+    "query": "%23ZaynMalikYouArePerfect", 
+    "name": "#ZaynMalikYouArePerfect", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=Malha%C3%A7%C3%A3o", 
+    "query": "Malha%C3%A7%C3%A3o", 
+    "name": "Malha\u00e7\u00e3o", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=Dinho", 
+    "query": "Dinho", 
+    "name": "Dinho", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=Florine", 
+    "query": "Florine", 
+    "name": "Florine", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=GSW", 
+    "query": "GSW", 
+    "name": "GSW", 
+    "promoted_content": null, 
+    "events": null
+   }, 
+   {
+    "url": "http://twitter.com/search?q=Selena", 
+    "query": "Selena", 
+    "name": "Selena", 
+    "promoted_content": null, 
+    "events": null
+   }
+  ], 
+  "as_of": "2013-07-05T21:45:30Z", 
+  "locations": [
+   {
+    "woeid": 1, 
+    "name": "Worldwide"
+   }
+  ]
+ }
+]
