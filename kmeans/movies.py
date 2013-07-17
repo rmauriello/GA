@@ -1,21 +1,23 @@
 #
 # Parse this file into a collection of product ids (ASIN) and review text.
 #
-# review/userId: A141HP4LYPWMSR
-# review/profileName: Brian E. Erland "Rainbow Sphinx"
-# review/helpfulness: 7/7
-# review/score: 3.0
-# review/time: 1182729600
-# review/summary: "There Is So Much Darkness Now ~ Come For The Miracle"
-# review/text: Synopsis: On the daily trek from Juarez, Mexico to El Paso,...
+# Prints dictionary:
+#   reviews['productID'] = [review1, review2, ...] 
 #
+# Input:
+	# review/userId: A141HP4LYPWMSR
+	# review/profileName: Brian E. Erland "Rainbow Sphinx"
+	# review/helpfulness: 7/7
+	# review/score: 3.0
+	# review/time: 1182729600
+	# review/summary: "There Is So Much Darkness Now ~ Come For The Miracle"
+	# review/text: Synopsis: On the daily trek from Juarez, Mexico to El Paso,...
 
+# Output
+	# number of reviews 156
+	# B00004CQT3 ["well,this just goes to show why you don't blindly accept a critics review....]
+	# B00004CQT4 ['It is a funny movie, but I think there is way too much cursing, ...]
 
-# Read the file,
-# Look for product/productID (product ID)
-#          review/text
-#
-# Create a dictionary review['productID'] = [review1, review2, ...] 
 from nltk import clean_html
 
 f = open('Data/movies.txt.small.txt')
