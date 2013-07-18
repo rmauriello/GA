@@ -22,6 +22,8 @@ Insult Prediction Project
   
   
   The Vowpal Wabbit (VW) scripts, vwprep.py and vwpost.py will prepare datasets for VW and then compare probabilities against the
-  sklearn probabilities.
+  sklearn probabilities. 
+
+  Note that there may be a bug in pandas.to_csv(). Besides the alphabetic ordering of the columns, it seems that specifying columns does not get expected columns. The columns can be printed out using print() though. 
   
   

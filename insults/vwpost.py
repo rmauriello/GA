@@ -9,6 +9,7 @@
 
 import pandas as pd
 import scipy as sp
+import numpy as np
 
 train    = pd.read_csv("Data/train.csv")
 test     = pd.read_csv('Data/test.csv')
@@ -38,8 +39,20 @@ print "Baseline percentage from logistic regression (sklearn) is ", 1.0*logistic
 #
 # Write out VW probabilities
 #
+vw = sp.exp(labels['values']) / ( 1 + sp.exp(labels['values']))
+
+# print compare['id'][1:10]
+# print compare['vw'][1:10]
+# print compare['logistic'][1:10]
+# print compare['comment'][1:10]
+
+
 fo = open("Data/vw.probabilities", "w")
-compare.to_csv(fo,cols=['id','prob_true'],index=False,float_format="%f")
+# vw.to_csv(fo,index=True,float_format="%f")
+# compare.to_csv(fo,cols=['id','vw'],index=False)  # seems to be a bug here in pandas
+for row in range(len(compare['vw'])):
+	line = str(compare['id'][row])  + ", " + str(compare['vw'][row]) + "\n"
+	fo.write(line)
 fo.close()
 
 #
@@ -50,6 +63,7 @@ diff2 = compare[compare['logistic'] - compare['vw'] > 0.3]
 
 fo = open("Data/diff.probabilities", "w")
 diff1.to_csv(fo,cols=['vw','logistic','Comment'],index=True,float_format="%f")
+fo.write("-------------------------------------------------------------------\n")
 diff2.to_csv(fo,cols=['vw','logistic','Comment'],index=True,float_format="%f")
 
 fo.close()
