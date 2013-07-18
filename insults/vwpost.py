@@ -21,10 +21,10 @@ logistic = pd.read_csv("Data/logistic.probabilities")
 #     Pr(True)  = Pi(x) = exp(a + bx) / (1 + exp(a +bx))
 #     Pr(False) = 1 - Pi(x) = 1 - ( exp(a + bx) / (1 + exp(a +bx)) )
 #
-compare = pd.DataFrame({'id': test['id'],
-						'vw': sp.exp(labels['values']) / ( 1 + sp.exp(labels['values'])),
-						'logistic': logistic['prob_true'],
-						'comment': test['Comment']
+compare = pd.DataFrame({'1id': test['id'],
+						'2vw': sp.exp(labels['values']) / ( 1 + sp.exp(labels['values'])),
+						'3logistic': logistic['prob_true'],
+						'4comment': test['Comment']
 						})
 
 insults    = labels[labels['values'] > 0.0]['values'].count()
@@ -41,30 +41,22 @@ print "Baseline percentage from logistic regression (sklearn) is ", 1.0*logistic
 #
 vw = sp.exp(labels['values']) / ( 1 + sp.exp(labels['values']))
 
-# print compare['id'][1:10]
-# print compare['vw'][1:10]
-# print compare['logistic'][1:10]
-# print compare['comment'][1:10]
 
 
 fo = open("Data/vw.probabilities", "w")
-# vw.to_csv(fo,index=True,float_format="%f")
-# compare.to_csv(fo,cols=['id','vw'],index=False)  # seems to be a bug here in pandas
-for row in range(len(compare['vw'])):
-	line = str(compare['id'][row])  + ", " + str(compare['vw'][row]) + "\n"
-	fo.write(line)
+compare.to_csv(fo,cols=['1id','2vw'],index=False)  # seems to be a bug here in pandas
 fo.close()
 
 #
 # Write out records with "high" difference between VW and Logistic
 #
-diff1 = compare[compare['vw'] - compare['logistic'] > 0.3]
-diff2 = compare[compare['logistic'] - compare['vw'] > 0.3]
+diff1 = compare[compare['2vw'] - compare['3logistic'] > 0.3]
+diff2 = compare[compare['3logistic'] - compare['2vw'] > 0.3]
 
 fo = open("Data/diff.probabilities", "w")
-diff1.to_csv(fo,cols=['vw','logistic','Comment'],index=True,float_format="%f")
+diff1.to_csv(fo,index=False,float_format="%f", cols=['1id','2vw','3logistic','4comment'])
 fo.write("-------------------------------------------------------------------\n")
-diff2.to_csv(fo,cols=['vw','logistic','Comment'],index=True,float_format="%f")
+diff2.to_csv(fo,index=False,float_format="%f", cols=['1id','2vw','3logistic','4comment'])
 
 fo.close()
 
