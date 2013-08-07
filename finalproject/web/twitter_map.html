@@ -124,7 +124,7 @@ queue()
     .defer(d3.json, "json/us.json")
     .defer(d3.tsv, "twitterN.tsv", function(d) {valueById.set(d.id, +d.value); })
     .defer(d3.tsv, "fipsdata.tsv", function(t) {infoById.set(t.code, [+t.pop, +t.perc, t.name] ); 
-      console.log( t.code, infoById.get(t.code) ) 
+      // console.log( t.code, infoById.get(t.code) ) 
     })
     .await(ready);  
 
@@ -141,11 +141,14 @@ function ready(error, us) {
         return quantize(valueById.get(d.id)); })
       .attr("d", path)
       .on('mouseover', function() {
-        d3.select(this).style("fill","#000");
-      })
-      .on('mouseout', function() {
-        d3.select(this).style("fill", "#FFF");
+        // Display hover text
+        d3.select(this).append("svg:title")
+        .text(function(d) { return infoById.get(d.id)})
       });
+      // .on('mouseout', function() {
+      //   // Remover hover text
+      //   d3.select(this).style("fill", "#000");
+      // });
 
   g.append("path")
       .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
