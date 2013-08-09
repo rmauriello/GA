@@ -1,0 +1,66 @@
+Pipeline:
+  I. Ingest and Store 
+  II. Parse & Filter
+  III. Analysis
+  IV. Predict
+  V. Report and Visualize
+
+
+
+# ./tw_stream.py | tw_parse.py/Pig |  tw_classifier  |  tw_aggregate.py  > twitter.tsv
+  |                                                  |
+  |__: raw_to_S3                                     |__: MongoDB
+
+
+
+
+
+I) Capture twitter live stream
+  -[X] filter by location (tw_stream.py)
+        what are the other options in the streaming API?
+
+  -[ ] use REST API to get some additional data
+        Top10?
+
+  -[X] Store raw data into S3
+        - copy using s3cmd (could use crontab)
+        - keep some local compressed copies on server
+
+II) Filter and aggregate raw data
+  -[ ] Identify required fields
+        [ ] feature extraction
+        [ ] general analysis
+
+  - Parsing and Filtering      
+    -[X] Python scripts (tw_parse.py)
+    -[ ] Pig scripts (tw_parse.pig)
+
+  -[ ]  Spatial Aggregation
+     -[X] Aggregate by county
+     -[ ] Aggregate by other geographic areas (e.g. metro)
+     -[X] Python scripts (tw_spat_aggr.py)
+     -[ ] Pig scripts (tw_spat_aggr.pig)
+
+  -[ ] Historical Rollups to get Minute/Hour/Day stats
+
+
+III) Analysis and Prediction
+  -[ ] Calculate descriptive statistics
+
+  -[ ] Calculate spatial statistics
+    - location quotient as (county insults/county total) / (national insults/national total)
+
+        http://www.census.gov/geo/reference/urban-rural.html
+        http://www.cdc.gov/nchs/data_access/urban_rural.htm
+  -[ ] Label Insults
+
+
+V) Report and Visualize
+  -[X] Normalize twitter count data 
+  -[X] Zoomable choropleth with labels
+  -[ ] Legend
+  -[ ] Time Series chart
+  -[ ] Dashboard
+
+
+
