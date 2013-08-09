@@ -12,46 +12,37 @@
  */
 
 
--- Register the python User-Defined Functions (UDFs) we will use
--- ** twitter_places.py (given Wheeling, WV) returns state (as abbreviation)
--- ** coffee.py (given text) returns if text found in list of coffee snob terms
+-- Register the python User-Defined Functions (UDFs)
+   -- twitter_places.py (given Wheeling, WV) returns state (as abbreviation)
+   -- coffee.py (given text) returns if text found in list of coffee snob terms
+   -- coords2countycode (given latitude,longitude) return FIPS county code as string
 
-REGISTER 'udfs/twitter_places.py' USING streaming_python AS twitter_places;
-REGISTER 'udfs/coffee.py' USING streaming_python AS coffee;
+-- REGISTER 'udfs/twitter_places.py' USING streaming_python AS twitter_places;
+-- REGISTER 'udfs/coffee.py' USING streaming_python AS coffee;
 
+-- Had to register the scripts using jython. Not sure how Mortar Data is using streaming
 REGISTER 'udfs/twitter_places.py' USING jython AS twitter_places;
 REGISTER 'udfs/coffee.py' USING jython AS coffee;
+-- REGISTER 'udfs/python/coords2countycode.py' USING jython AS coords2countycode;
 
-
--- coords2countycode (given latitude,longitude) return FIPS county code as string
--- ** REGISTER '../udfs/python/coords2countycode.py' USING streaming_python AS coords2countycode;
-
-
--- ** Let's start off with S3 native (s3n) even though it has 5GB file limit
--- ** Don't have to create buckets and other tools can access files 
--- ** Use S3/S3N for persistent storage and HDFS for temporary use
- 
--- %default TWEET_LOAD_PATH 's3n://twitter-gardenhose-mortar/example'
--- %default OUTPUT_PATH 's3n://mortar-example-output-data/$EMAIL_S3_ESCAPED/coffee_tweets'
 
 %default TWEET_LOAD_PATH 's3://mauriello/twitter/tw.dump'
 %default OUTPUT_PATH 's3://mauriello/twitter/output/coffee_tweets'
 
 -- Load up tweets specified in env parameter file supplied at runtime (env/x.params)
 --   coordinates, place, (no location in load)
--- 
-
-
-      --   USING org.apache.pig.piggybank.storage.JsonLoader(
+ 
 tweets =  LOAD '$TWEET_LOAD_PATH' 
          USING JsonLoader(
                    'coordinates:map[], created_at:chararray, current_user_retweet:map[], entities:map[], favorited:chararray, id_str:chararray, in_reply_to_screen_name:chararray, in_reply_to_status_id_str:chararray, place:map[], possibly_sensitive:chararray, retweet_count:int, source:chararray, text:chararray, truncated:chararray, user:map[], withheld_copyright:chararray, withheld_in_countries:{t:(country:chararray)}, withheld_scope:chararray');
 
+#
+# How do I get a big
+#
 
 tweets =  LOAD 's3://mauriello/twitter/tw1k.dump' 
          USING JsonLoader(
                    'coordinates:map[], created_at:chararray, entities:map[], favorited:chararray, id_str:chararray,   place:map[], source:chararray, text:chararray,  user:map[]');
-
 
 
 -- Filter to get only tweets that have a location in the US
@@ -130,5 +121,3 @@ USING PigStorage('\t');
 
 rmf s3://mauriello/twitter/coffee-results
 store coffee_tweets into 's3://mauriello/twitter/coffee-results' USING PigStorage('\t');
-  
-store ordered_output into 's3://mauriello/twitter/coffee-results';   
