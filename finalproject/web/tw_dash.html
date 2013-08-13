@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+svg {
+  font: 10px sans-serif;
+}
+
+.background {
+  fill: none;
+  pointer-events: all;
+}
+  
+.counties {
+  fill: #CCC;
+}
+
+#states {
+  fill: #aaa2;
+}
+
+#states .active {
+  fill: none;
+}
+
+#state-borders {
+  fill: none;   
+  stroke: #fff;
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.states {
+  fill: #aaa2;
+  stroke: #999;
+  stroke-linejoin: round;
+}
+/*Start the styles for the line chart*/
+/*path {
+  fill: steelblue;
+}*/
+
+/*path {
+  fill: none;
+}*/
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #333;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+/*How do I set fill on line2?*/
+/*.line2 {
+  fill: none;
+  stroke: steelblue;
+}*/
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+  
+
+/* 9-step Red-Blue Diverging Colorbrewer ramp */
+
+.q8-9 { fill:rgb(215, 48, 39); } 
+.q7-9 { fill:rgb(244, 109, 67); }
+.q6-9 { fill:rgb(253, 174, 97); }
+.q5-9 { fill:rgb(254, 224, 144); }
+.q4-9 { fill:rgb(255, 255, 191); }
+.q3-9 { fill:rgb(224, 243, 248); }
+.q2-9 { fill:rgb(171, 217, 233); }
+.q1-9 { fill:rgb(116, 173, 209); }
+.q0-9 { fill:rgb(69, 117, 180); }
+
+
+/*.q8-9 { fill:rgb(247,251,255); }
+.q7-9 { fill:rgb(222,235,247); }
+.q6-9 { fill:rgb(198,219,239); }
+.q5-9 { fill:rgb(158,202,225); }
+.q4-9 { fill:rgb(107,174,214); }
+.q3-9 { fill:rgb(66,146,198); }
+.q2-9 { fill:rgb(33,113,181); }
+.q1-9 { fill:rgb(8,81,156); }
+.q0-9 { fill:rgb(8,48,107); }
+ 
+*/</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+
+<DIV heatmap>
+<script>
+ 
+var margin = {top: 30, right: 50, bottom: 150, left: 40};
+var    width = 960 - margin.left - margin.right,
+       height = 500, 
+       centered;
+
+// var width = 960,
+//     height = 500,
+//     centered;
+
+// Initialize the dictionary FIPS code -> value
+var valueById = d3.map();
+var infoById= d3.map();
+ 
+var quantize = d3.scale.quantize()
+    .domain([0, 1])
+    .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
+ 
+var projection = d3.geo.albersUsa()
+    .scale(1070)
+    .translate([width / 2, height / 2]);
+ 
+// var path = d3.geo.path();
+var path = d3.geo.path()
+    .projection(projection);
+ 
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height)
+    .on("click", clicked);
+
+
+var g = svg.append("g");    
+
+queue()
+    .defer(d3.json, "json/us.json")
+    .defer(d3.tsv, "twitterN.tsv", function(d) {valueById.set(d.id, +d.value); })
+    .defer(d3.tsv, "fipsdata.tsv", function(t) {infoById.set(t.code, [+t.pop, +t.perc, t.name] ); 
+      // console.log( t.code, infoById.get(t.code) ) 
+    })
+    .await(ready);  
+
+
+function ready(error, us) {
+
+  g.append("g")
+      .attr("class", "counties")
+    .selectAll("path")
+      .data(topojson.feature(us, us.objects.counties).features)
+    .enter().append("path")
+      .attr("class", function(d) {  
+        return quantize(valueById.get(d.id)); })
+      .attr("d", path)
+      .on('mouseover', function() {
+        // Display hover text
+        d3.select(this).append("svg:title")
+        .text(function(d) { return infoById.get(d.id)})
+      });
+      // .on('mouseout', function() {
+      //   // Remover hover text
+      //   d3.select(this).remove();
+      // });
+
+  g.append("path")
+      .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+      .attr("id", "state-borders")
+      .attr("d", path);
+  g.append("g")
+      .attr("id", "states")
+    .selectAll("path")
+      .data(topojson.feature(us, us.objects.states).features)
+    .enter().append("path")
+      .attr("d", path)
+      .on("click", clicked);
+
+      svg.append("text")
+  .attr("x", (width / 2))             
+  .attr("y", (margin.top / 2))
+  .attr("text-anchor", "middle")  
+  .style("font-size", "16px") 
+  .text("Per Capita Tweets - not really");
+
+
+} ;
+
+function clicked(d) {
+  var x, y, k;
+ 
+  if (d && centered !== d) {
+    var centroid = path.centroid(d);
+    x = centroid[0];
+    y = centroid[1];
+    k = 4;
+    centered = d;
+  } else {
+    x = width / 2;
+    y = height / 2;
+    k = 1;
+    centered = null;
+  }
+ 
+  g.selectAll("path")
+      .classed("active", centered && function(d) { return d === centered; });
+ 
+  g.transition()
+      .duration(750)
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+      .style("stroke-width", 1.5 / k + "px");
+}
+ 
+</script>
+</DIV>
+
+<DIV TIME>
+
+<script>
+
+// var margin = {top: 10, right: 10, bottom: 100, left: 50},
+//     margin2 = {top: 430, right: 10, bottom: 20, left: 50},
+//     width = 960 - margin.left - margin.right,
+//     height = 500 - margin.top - margin.bottom,
+//     height2 = 300 - margin2.top - margin2.bottom ;
+    
+var margin = {top: 30, right: 50, bottom: 150, left: 40},
+    margin2 = {top: 300, right: 50, bottom: 50, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom,
+    height2 = 400 - margin2.top - margin2.bottom;
+
+var parseDate = d3.time.format("%a %b %d %H").parse;
+
+var x =  d3.time.scale().range([0, width]),
+    x2 = d3.time.scale().range([0, width]),
+    y =  d3.scale.linear().range([height, 0]),
+    y2 = d3.scale.linear().range([height2, 0]);
+
+
+var color = d3.scale.category10();
+
+var xAxis  = d3.svg.axis().scale(x).orient("bottom"),
+    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+    yAxis  = d3.svg.axis().scale(y).orient("left");
+
+var brush = d3.svg.brush()
+    .x(x2)
+    .on("brush", brushed);
+
+var line = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.price); });
+
+var line2 = d3.svg.line()
+    .x(function(d) { return x2(d.date); })
+    // .y0(height2)
+    .y(function(d) { return y2(d.price); });    
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+var focus = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var context = svg.append("g")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+d3.tsv("rates2.tsv", function(error, data) {
+  
+  data.forEach(function(d) {
+    d.date = parseDate(d.date);
+    d.price = +d.price;
+  });
+
+  // x.domain(d3.extent(data, function(d) { return d.date; })).nice();
+  // y.domain(d3.extent(data, function(d) { return d.price; })).nice();
+
+  x.domain(d3.extent(data.map(function(d) { return d.date; })));
+  y.domain([0, d3.max(data.map(function(d) { return d.price; }))]);
+  // Add the context
+  x2.domain(x.domain());
+  y2.domain(y.domain());
+
+  focus.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("clip-path", "url(#clip)")
+      .attr("d", line);
+    
+
+  focus.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Date (UTC)");
+
+  focus.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Geocoded Tweet Count");
+
+
+// Need to get rid of fill to match focus
+  context.append("path")
+      .datum(data)
+      .attr("d", line2)
+      .style("stroke", "steelblue") // Why doesn't CSS work?
+      .style("fill", "none");       // added
+
+  context.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height2 + ")")
+      .call(xAxis2);
+
+  context.append("g")
+      .attr("class", "x brush")
+      .call(brush)
+    .selectAll("rect")
+      .attr("y", -6)
+      .attr("height", height2 + 7);
+
+
+svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .text("Counts of Tweets by Hour");
+
+});
+
+function brushed() {
+  x.domain(brush.empty() ? x2.domain() : brush.extent());
+  focus.select("path").attr("d", line);
+  focus.select(".x.axis").call(xAxis);
+}
+
+</script>
+
+
+</DIV>
