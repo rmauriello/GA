@@ -282,6 +282,8 @@ svg.append("defs").append("clipPath")
 var focus = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+var circlegroup = focus.append("g");
+
 var context = svg.append("g")
     .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
@@ -307,6 +309,16 @@ d3.tsv("rates2.tsv", function(error, data) {
       .attr("clip-path", "url(#clip)")
       .attr("d", line);
     
+  // Added to get scatter to the line plot
+
+  circlegroup.attr("clip-path", "url(#clip)")
+    .selectAll('.dot')
+    .data(data)   
+    .enter().append("circle")
+    .attr('class', 'dot')
+    .attr("cx", function(d) { return x(d.date); })
+    .attr("cy", function(d) { return y(d.price); })
+    .attr("r", function(d)  { return 4; });  
 
   focus.append("g")
       .attr("class", "x axis")
@@ -360,12 +372,20 @@ svg.append("text")
 
 });
 
+// function brushed() {
+//   x.domain(brush.empty() ? x2.domain() : brush.extent());
+//   focus.select("path").attr("d", line);
+//   focus.select(".x.axis").call(xAxis);
+// }
+
 function brushed() {
   x.domain(brush.empty() ? x2.domain() : brush.extent());
   focus.select("path").attr("d", line);
   focus.select(".x.axis").call(xAxis);
+  circlegroup.selectAll(".dot")
+    .attr("cx", function(d) { return x(d.date); })
+    .attr("cy", function(d) { return y(d.price); })
 }
-
 </script>
 
 
