@@ -36,14 +36,15 @@ def twitterreq(url, method, parameters):
                                               parameters=parameters)
   except:
     e = sys.exc_info()[0]
-    print "Error - req = ", req, "\n", e
+    sys.stderr.write("Error from oauth request: " + str(e) + "\n")
+    
 
   try:
     req.sign_request(signature_method_hmac_sha1, oauth_consumer, oauth_token)
   except:
     e = sys.exc_info()[0]
-    print "Error - req_sign = ", req_sign, "\n", e
-
+    sys.stderr.write("Error from sign request: " + str(e) + "\n")
+        
   headers = req.to_header()
 
   if http_method == "POST":
@@ -78,7 +79,7 @@ def fetchsamples():
       # - filtering here ..self.
   except:
     e = sys.exc_info()[0]
-    print "Error with twitter request", url, "GET", parameters
+    sys.stderr.write("Error from Twitter request: " + url + "\n")
 
 
 if __name__ == '__main__':
@@ -94,10 +95,9 @@ if __name__ == '__main__':
     consumer_key        = tokens[1][2].strip()
     consumer_secret     = tokens[1][3].strip()
 
-    print access_token_key, access_token_secret
-    print consumer_key, consumer_secret
   except:
-    print "Error reading tokens file. Exiting..."
+    sys.stderr.write("Error reading tokens file. Exiting...\n")
+
     exit(-1)
 
 

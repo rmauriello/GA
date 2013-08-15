@@ -15,8 +15,8 @@ import numpy as np
 def main():
 	
 	try:
-		pop_county    = pd.read_csv("../Data/fipscounties.csv",sep=",",header=0)
-		tweets_county = pd.read_csv("../Data/tweet_counts.tsv",sep="\t",header=0,names=['code','value'])
+		pop_county    = pd.read_csv("../Data/fipscounties.csv",sep = ",",header=0)
+		tweets_county = pd.read_csv("../Data/tweet-parsed-14d/tw-counts-14d.tsv",sep ="\t",header=0,names=['code','value'])
 	except:
 		print "Could not open file. Exiting"
 		exit(-1)
@@ -30,15 +30,19 @@ def main():
 	# Let's calculate tweet count, linearly scale to [0,1]
 	# Should correlate to US population
 	#
-	j['tweets'] = j['value']/j['value'].max()
-	min = j['tweets'].min() # 
-	max = j['tweets'].max() # s/b 1
+
+	j['tweets'] = j['value']/float(j.value.max())
+
+	min = float(j['tweets'].min()) # 
+	max = float(j['tweets'].max()) # s/b 1
 
 	scale_factor = 1.0/(max - min)
-	j['count'] = (j['tweets'] - min) * scale_factor
+	j['value'] = (j['tweets'] - min) * scale_factor
+
+	d = j[:][['code','value']]
 
 	fo = open("twitter.tsv","w")
-	d.to_csv(fo, cols=['code','count'], index=None,sep="\t",float_format="%0.5f")
+	j.to_csv(fo, cols=['code','value'], index=None,sep="\t",float_format="%0.9f")
 	fo.close()
 
 

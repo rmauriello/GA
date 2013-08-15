@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import re, sys
 import shapely
 import shapely.speedups
 import shapefile
@@ -74,9 +74,14 @@ lookup_cnt = 1
 for line in sys.stdin:
 	lineno += 1
 	try:
-		words = line.split(',')
-		lat = float(words[0].strip()[2:])
-		lon = float(words[1].strip()[0:-1])
+		words = line.split('\t')
+		# lat = float(words[0].strip()[2:])
+		# lon = float(words[1].strip()[0:-1])
+
+		(lat, lon) = words[4].split(',')
+		lat = float(re.sub(r"[{}()]", "", lat))
+		lon = float(re.sub(r"[{}()]", "", lon))
+
 
 		# Really basic caching. Don't compute if we have result already
 		geokey =  "%0.4f%0.4f" % (lon,lat)
@@ -118,7 +123,7 @@ if DEBUG:
 	sys.stderr.write("LOOKUPS  =  %d\n" %     lookup_cnt)
 	sys.stderr.write("LOOKUP errors  = %d\n" % lookup_errs)  
 
-print "id\trate"             # d3.tsv wants a header line by default
+print "code\tvalue"             # d3.tsv wants a header line by default
 for key,value in county_sum.items():
 	print "%s\t%d" % (key,  value )
 
