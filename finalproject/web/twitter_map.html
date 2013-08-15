@@ -119,12 +119,11 @@ svg.append("rect")
 //Added
 var g = svg.append("g");    
 
-var info = []
 queue()
     .defer(d3.json, "json/us.json")
     .defer(d3.tsv, "twitterN.tsv", function(d) {valueById.set(d.id, +d.value); })
     .defer(d3.tsv, "fipsdata.tsv", function(t) {infoById.set(t.code, [+t.pop, +t.perc, t.name] ); 
-      // console.log( t.code, infoById.get(t.code) ) 
+      console.log( t.code, infoById.get(t.code) ) 
     })
     .await(ready);  
 
@@ -147,7 +146,7 @@ function ready(error, us) {
       });
       // .on('mouseout', function() {
       //   // Remover hover text
-      //   d3.select(this).style("fill", "#000");
+      //   d3.select(this).remove();
       // });
 
   g.append("path")

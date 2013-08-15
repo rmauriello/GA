@@ -41,13 +41,6 @@ svg {
   stroke-linejoin: round;
 }
 /*Start the styles for the line chart*/
-/*path {
-  fill: steelblue;
-}*/
-
-/*path {
-  fill: none;
-}*/
 
 .axis path,
 .axis line {
@@ -62,12 +55,6 @@ svg {
   stroke-width: 1.5px;
 }
 
-/*How do I set fill on line2?*/
-/*.line2 {
-  fill: none;
-  stroke: steelblue;
-}*/
-
 .brush .extent {
   stroke: #fff;
   fill-opacity: .125;
@@ -76,8 +63,7 @@ svg {
   
 
 /* 9-step Red-Blue Diverging Colorbrewer ramp */
-
-.q8-9 { fill:rgb(215, 48, 39); } 
+/*.q8-9 { fill:rgb(215, 48, 39); } 
 .q7-9 { fill:rgb(244, 109, 67); }
 .q6-9 { fill:rgb(253, 174, 97); }
 .q5-9 { fill:rgb(254, 224, 144); }
@@ -86,42 +72,40 @@ svg {
 .q2-9 { fill:rgb(171, 217, 233); }
 .q1-9 { fill:rgb(116, 173, 209); }
 .q0-9 { fill:rgb(69, 117, 180); }
+*/
 
+/* 9-step Purple-Blue  Colorbrewer ramp */
 
-/*.q8-9 { fill:rgb(247,251,255); }
-.q7-9 { fill:rgb(222,235,247); }
-.q6-9 { fill:rgb(198,219,239); }
-.q5-9 { fill:rgb(158,202,225); }
+.q0-9 { fill:rgb(247,251,255); }
+.q1-9 { fill:rgb(222,235,247); }
+.q2-9 { fill:rgb(198,219,239); }
+.q3-9 { fill:rgb(158,202,225); }
 .q4-9 { fill:rgb(107,174,214); }
-.q3-9 { fill:rgb(66,146,198); }
-.q2-9 { fill:rgb(33,113,181); }
-.q1-9 { fill:rgb(8,81,156); }
-.q0-9 { fill:rgb(8,48,107); }
+.q5-9 { fill:rgb(66,146,198); }
+.q6-9 { fill:rgb(33,113,181); }
+.q7-9 { fill:rgb(8,81,156); }
+.q8-9 { fill:rgb(8,48,107); }
  
-*/</style>
+ 
+</style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 
-<DIV heatmap>
 <script>
  
-var margin = {top: 30, right: 50, bottom: 150, left: 40};
-var    width = 960 - margin.left - margin.right,
-       height = 500, 
-       centered;
-
-// var width = 960,
-//     height = 500,
-//     centered;
+var width = 960,
+    height = 500,
+    centered;
 
 // Initialize the dictionary FIPS code -> value
 var valueById = d3.map();
 var infoById= d3.map();
  
 var quantize = d3.scale.quantize()
-    .domain([0, 1])
+    // .domain([0, 1])
+    .domain([-14, 0.1])  // stupid hack to rescale
     .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
  
 var projection = d3.geo.albersUsa()
@@ -142,16 +126,26 @@ svg.append("rect")
     .attr("height", height)
     .on("click", clicked);
 
+// Trying to add another rect on the right or left for legend
+// svg.append("rect")
+//     .attr("class", "background")
+//     .attr("width", width/5)
+//     .attr("height", height);
+//     // .attr("transform", "translate( " + width /+ ",0)"   
+//     // .on("click", clicked);
 
+
+//Added
 var g = svg.append("g");    
 
 queue()
     .defer(d3.json, "json/us.json")
-    .defer(d3.tsv, "twitterN.tsv", function(d) {valueById.set(d.id, +d.value); })
+    .defer(d3.tsv, "twitter.tsv", function(d) {valueById.set(d.id, Math.log(+d.value) ); })
     .defer(d3.tsv, "fipsdata.tsv", function(t) {infoById.set(t.code, [+t.pop, +t.perc, t.name] ); 
-      // console.log( t.code, infoById.get(t.code) ) 
+      console.log( t.code, infoById.get(t.code) ) 
     })
     .await(ready);  
+
 
 
 function ready(error, us) {
@@ -186,14 +180,6 @@ function ready(error, us) {
       .attr("d", path)
       .on("click", clicked);
 
-      svg.append("text")
-  .attr("x", (width / 2))             
-  .attr("y", (margin.top / 2))
-  .attr("text-anchor", "middle")  
-  .style("font-size", "16px") 
-  .text("Per Capita Tweets - not really");
-
-
 } ;
 
 function clicked(d) {
@@ -221,18 +207,14 @@ function clicked(d) {
       .style("stroke-width", 1.5 / k + "px");
 }
  
-</script>
+
+</SCRIPT>
 </DIV>
 
 <DIV TIME>
 
 <script>
 
-// var margin = {top: 10, right: 10, bottom: 100, left: 50},
-//     margin2 = {top: 430, right: 10, bottom: 20, left: 50},
-//     width = 960 - margin.left - margin.right,
-//     height = 500 - margin.top - margin.bottom,
-//     height2 = 300 - margin2.top - margin2.bottom ;
     
 var margin = {top: 30, right: 50, bottom: 150, left: 40},
     margin2 = {top: 300, right: 50, bottom: 50, left: 40},
@@ -287,15 +269,12 @@ var circlegroup = focus.append("g");
 var context = svg.append("g")
     .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-d3.tsv("rates2.tsv", function(error, data) {
+d3.tsv("tweet-by-hour.tsv", function(error, data) {
   
   data.forEach(function(d) {
     d.date = parseDate(d.date);
     d.price = +d.price;
   });
-
-  // x.domain(d3.extent(data, function(d) { return d.date; })).nice();
-  // y.domain(d3.extent(data, function(d) { return d.price; })).nice();
 
   x.domain(d3.extent(data.map(function(d) { return d.date; })));
   y.domain([0, d3.max(data.map(function(d) { return d.price; }))]);
@@ -362,21 +341,13 @@ d3.tsv("rates2.tsv", function(error, data) {
       .attr("y", -6)
       .attr("height", height2 + 7);
 
-
 svg.append("text")
         .attr("x", (width / 2))             
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")  
         .style("font-size", "16px") 
         .text("Counts of Tweets by Hour");
-
 });
-
-// function brushed() {
-//   x.domain(brush.empty() ? x2.domain() : brush.extent());
-//   focus.select("path").attr("d", line);
-//   focus.select(".x.axis").call(xAxis);
-// }
 
 function brushed() {
   x.domain(brush.empty() ? x2.domain() : brush.extent());
