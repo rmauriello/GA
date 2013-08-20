@@ -11,13 +11,23 @@
   fill: #CCC;
 }
 
+
+.states {
+  fill: none;
+  stroke: #FFF;
+  stroke-linejoin: round;
+}
+
+
 #states {
   fill: #aaa2;
 }
 
-#states .active {
+
+/*#states .active {
   fill: None;
 }
+*/
 
 #state-borders {
   fill: none;
@@ -27,13 +37,6 @@
   stroke-linecap: round;
   pointer-events: none;
 }
-
-.states {
-  /*fill: #aaa;*/
-  stroke: #999;
-  stroke-linejoin: round;
-}
-
 
 /*9-class Spectral diverging*/
 /*.q8-9 { fill:rgb(213, 62, 79); } 
@@ -115,10 +118,9 @@ queue()
     .defer(d3.json, "json/us.json")
     .defer(d3.tsv, "twitterN.tsv", function(d) {valueById.set(d.id, +d.value); })
     .defer(d3.tsv, "fipsdata.tsv", function(t) {infoById.set(t.code, [+t.pop, +t.perc, t.name] ); 
-      console.log( t.code, infoById.get(t.code) ) 
+      // console.log( t.code, infoById.get(t.code) ) 
     })
     .await(ready);  
-
 
 
 function ready(error, us) {
@@ -157,13 +159,19 @@ function ready(error, us) {
 
   var color_domain = [50, 150, 350, 750, 1500]
   var ext_color_domain = [0, 50, 150, 350, 750, 1500]
-  var legend_labels = ["< 50", "50+", "150+", "350+", "750+", "> 1500"]  
-  var color = d3.scale.threshold()
+  var legend_labels = ["1", "2", "3", "4", "5", "6"]  
+
+  // var color = d3.scale.threshold()
+
+  var color = d3.scale.quantize()
+    // .domain([0, 1])
+    .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
 
   var legend = svg.selectAll("g.legend")
   .data(ext_color_domain)
   .enter().append("g")
-  .attr("class", "legend");
+  .attr("class", "legend")
+  .attr("transform","translate(800,-30)");
 
   var ls_w = 20, ls_h = 20;
 
@@ -172,13 +180,17 @@ function ready(error, us) {
   .attr("y", function(d, i){ return height - (i*ls_h) - 2*ls_h;})
   .attr("width", ls_w)
   .attr("height", ls_h)
-  .style("fill", function(d, i) { return color(d); })
+  // .style("fill", function(d, i) { return color(d); })
+  .style("fill", function(d, i) { return "q" + i + "-9"; })
   .style("opacity", 0.8);
 
+
+
+ 
   legend.append("text")
   .attr("x", 50)
-  .attr("y", function(d, i){ return height - (i*ls_h) - ls_h - 4;})
-  .text(function(d, i){ return legend_labels[i]; });
+  .attr("y", function(d, i) {return height - (i*ls_h) - ls_h - 4;})
+  .text(function(d, i) {return legend_labels[i]; });
 
 } ;
 
