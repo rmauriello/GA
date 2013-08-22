@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+
+
+<BR>
+<P>
+<a href="tw_dash.html">Example Dashboard</A> - Tweet count by county; count by hour. Have to fix colormap and labeling issue. A legend would be nice. 
+<BR>
+<BR>
+
+<a href="tw_dash3.html">Another Dashboard</A> - Tweet vs. expectations by county; count by hour. Have to fix colormap and labeling issue. A legend would be nice. 
+
+<BR>
+<BR>
+As a general rule, tweets correlate well with population, as seen in <a href="pop_vs_tweets_all.pdf">this graph</A> and also <A href="LogPop_vs_LogCount.pdf"> this one</A> but only when counting all counties. The extreme value is for US total with other large values being states. However, when looking at the <A href="pop_vs_tweets_500k.pdf">majority of counties</A>, e.g. less than half million, it's less linear. And yes, I need to plot R-squared.
+<BR>
+<a href="tw_map.html">Twitter Exceptions Map</A>- Red (more than expected based on population) to Blue (less).
+	<BR>
+	Ratio of tweets in county/ tweets in US  vs. population in county/ US population. 
+	<BR>
+	Could be more sophisticated, e.g. spatial averaging based on adjacent counties, urban vs. rural, etc.
+	<BR>
+	Mouseover gives county population, percentage of US population, and county name. 
+	<BR>
+		With one week of data, Missouri looked interesting. Less tweets expected given the population as seen in the blue counties. With two weeks of collection, less obvious. 
+
+<BR>
+<BR>
+
+<a href="tw_timeseries_det.html">Tweet count by minute</A> - Just wondering when D3.js would choke. 12,513 records but really 3x12,513 elements to be plotted - twice for focus and context lines and also for scatter plot. Should be able to draw scatter plot only when zoomed in. Need to fix the margins so the top doesn't get clipped. 
+<BR>
+<BR>
+<a href="GA_Presentation.pdf">Short semi-technical presentation</A> about current state of the project.
+<BR>
+<BR>
+<a href="final_paper.pdf">Associated technical paper</A> 
+
